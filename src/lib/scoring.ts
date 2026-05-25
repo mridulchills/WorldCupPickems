@@ -105,14 +105,14 @@ export function getRoundOf32Matches(
 export function getRoundOf16Matches(r32Winners: string[]): { home: string; away: string; id: number }[] {
   const getWinnerOfMatch = (matchId: number) => r32Winners[matchId - 73] || `Winner Match ${matchId}`;
   return [
-    { id: 89, home: getWinnerOfMatch(73), away: getWinnerOfMatch(75) },
-    { id: 90, home: getWinnerOfMatch(74), away: getWinnerOfMatch(76) },
-    { id: 91, home: getWinnerOfMatch(77), away: getWinnerOfMatch(79) },
-    { id: 92, home: getWinnerOfMatch(78), away: getWinnerOfMatch(80) },
-    { id: 93, home: getWinnerOfMatch(81), away: getWinnerOfMatch(83) },
-    { id: 94, home: getWinnerOfMatch(82), away: getWinnerOfMatch(84) },
-    { id: 95, home: getWinnerOfMatch(85), away: getWinnerOfMatch(87) },
-    { id: 96, home: getWinnerOfMatch(86), away: getWinnerOfMatch(88) }
+    { id: 89, home: getWinnerOfMatch(74), away: getWinnerOfMatch(77) },
+    { id: 90, home: getWinnerOfMatch(73), away: getWinnerOfMatch(75) },
+    { id: 91, home: getWinnerOfMatch(76), away: getWinnerOfMatch(78) },
+    { id: 92, home: getWinnerOfMatch(79), away: getWinnerOfMatch(80) },
+    { id: 93, home: getWinnerOfMatch(83), away: getWinnerOfMatch(84) },
+    { id: 94, home: getWinnerOfMatch(81), away: getWinnerOfMatch(82) },
+    { id: 95, home: getWinnerOfMatch(86), away: getWinnerOfMatch(88) },
+    { id: 96, home: getWinnerOfMatch(85), away: getWinnerOfMatch(87) }
   ];
 }
 
