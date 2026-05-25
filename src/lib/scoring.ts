@@ -1,4 +1,5 @@
 import { TEAMS } from './teams';
+import { getThirdPlaceRouting } from './routing';
 
 export interface TournamentData {
   groupStandings: Record<string, string[]>; // Group ID -> Array of 4 team IDs in order
@@ -41,60 +42,97 @@ export function getRoundOf32Matches(
   // Safe extraction helper
   const getWinner = (g: string) => (groupStandings[g] && groupStandings[g][0]) || `Winner ${g}`;
   const getRunnerUp = (g: string) => (groupStandings[g] && groupStandings[g][1]) || `Runner ${g}`;
-  const getThird = (idx: number) => bestThirdPlace[idx] || `3rd Place #${idx + 1}`;
+
+  // Get the group letters for the 8 third-place teams
+  const thirdPlaceGroups = bestThirdPlace.map(teamId => {
+    const team = TEAMS.find(t => t.id === teamId);
+    return team ? team.group : '';
+  }).filter(Boolean);
+
+  let routing: Record<string, string> | null = null;
+  if (thirdPlaceGroups.length === 8) {
+    routing = getThirdPlaceRouting(thirdPlaceGroups); // throws if invalid combo
+  }
+
+  // Helper to find the team ID for a given "3G" etc.
+  const getSpecificThird = (expectedThird: string) => {
+    const groupLetter = expectedThird.replace('3', '');
+    const teamId = bestThirdPlace.find(id => {
+      const t = TEAMS.find(team => team.id === id);
+      return t?.group === groupLetter;
+    });
+    
+    if (!teamId) {
+      throw new Error(`Routing matched 3rd place from group ${groupLetter} but it is missing from bestThirdPlace selection.`);
+    }
+    return teamId;
+  };
+
+  const getRoutedThird = (winnerCode: string, placeholderIdx: number) => {
+    if (thirdPlaceGroups.length < 8 || !routing) {
+      return `3rd Place #${placeholderIdx + 1}`;
+    }
+    
+    const targetThird = routing[winnerCode];
+    if (!targetThird) {
+      throw new Error(`Missing routing target for winner ${winnerCode}`);
+    }
+    
+    return getSpecificThird(targetThird);
+  };
 
   return [
-    { id: 1, home: getWinner('A'), away: getThird(0) },
-    { id: 2, home: getRunnerUp('B'), away: getRunnerUp('C') },
-    { id: 3, home: getWinner('D'), away: getThird(1) },
-    { id: 4, home: getRunnerUp('E'), away: getRunnerUp('F') },
-    { id: 5, home: getWinner('G'), away: getThird(2) },
-    { id: 6, home: getWinner('K'), away: getRunnerUp('H') },
-    { id: 7, home: getWinner('J'), away: getThird(3) },
-    { id: 8, home: getRunnerUp('I'), away: getRunnerUp('L') },
-    { id: 9, home: getWinner('B'), away: getThird(4) },
-    { id: 10, home: getRunnerUp('A'), away: getRunnerUp('D') },
-    { id: 11, home: getWinner('C'), away: getThird(5) },
-    { id: 12, home: getWinner('I'), away: getRunnerUp('G') },
-    { id: 13, home: getWinner('E'), away: getThird(6) },
-    { id: 14, home: getWinner('L'), away: getRunnerUp('J') },
-    { id: 15, home: getWinner('F'), away: getThird(7) },
-    { id: 16, home: getWinner('H'), away: getRunnerUp('K') }
+    { id: 73, home: getRunnerUp('A'), away: getRunnerUp('B') },
+    { id: 74, home: getWinner('E'), away: getRoutedThird('E1', 0) },
+    { id: 75, home: getWinner('F'), away: getRunnerUp('C') },
+    { id: 76, home: getWinner('C'), away: getRunnerUp('F') },
+    { id: 77, home: getWinner('I'), away: getRoutedThird('I1', 1) },
+    { id: 78, home: getRunnerUp('E'), away: getRunnerUp('I') },
+    { id: 79, home: getWinner('A'), away: getRoutedThird('A1', 2) },
+    { id: 80, home: getWinner('L'), away: getRoutedThird('L1', 3) },
+    { id: 81, home: getWinner('D'), away: getRoutedThird('D1', 4) },
+    { id: 82, home: getWinner('G'), away: getRoutedThird('G1', 5) },
+    { id: 83, home: getRunnerUp('K'), away: getRunnerUp('L') },
+    { id: 84, home: getWinner('H'), away: getRunnerUp('J') },
+    { id: 85, home: getWinner('B'), away: getRoutedThird('B1', 6) },
+    { id: 86, home: getWinner('J'), away: getRunnerUp('H') },
+    { id: 87, home: getWinner('K'), away: getRoutedThird('K1', 7) },
+    { id: 88, home: getRunnerUp('D'), away: getRunnerUp('G') }
   ];
 }
 
 // Determine matchups for R16
 export function getRoundOf16Matches(r32Winners: string[]): { home: string; away: string; id: number }[] {
-  const getWinnerOfMatch = (matchId: number) => r32Winners[matchId - 1] || `Winner R32 Match ${matchId}`;
+  const getWinnerOfMatch = (matchId: number) => r32Winners[matchId - 73] || `Winner Match ${matchId}`;
   return [
-    { id: 1, home: getWinnerOfMatch(1), away: getWinnerOfMatch(2) },
-    { id: 2, home: getWinnerOfMatch(3), away: getWinnerOfMatch(4) },
-    { id: 3, home: getWinnerOfMatch(5), away: getWinnerOfMatch(6) },
-    { id: 4, home: getWinnerOfMatch(7), away: getWinnerOfMatch(8) },
-    { id: 5, home: getWinnerOfMatch(9), away: getWinnerOfMatch(10) },
-    { id: 6, home: getWinnerOfMatch(11), away: getWinnerOfMatch(12) },
-    { id: 7, home: getWinnerOfMatch(13), away: getWinnerOfMatch(14) },
-    { id: 8, home: getWinnerOfMatch(15), away: getWinnerOfMatch(16) }
+    { id: 89, home: getWinnerOfMatch(73), away: getWinnerOfMatch(75) },
+    { id: 90, home: getWinnerOfMatch(74), away: getWinnerOfMatch(76) },
+    { id: 91, home: getWinnerOfMatch(77), away: getWinnerOfMatch(79) },
+    { id: 92, home: getWinnerOfMatch(78), away: getWinnerOfMatch(80) },
+    { id: 93, home: getWinnerOfMatch(81), away: getWinnerOfMatch(83) },
+    { id: 94, home: getWinnerOfMatch(82), away: getWinnerOfMatch(84) },
+    { id: 95, home: getWinnerOfMatch(85), away: getWinnerOfMatch(87) },
+    { id: 96, home: getWinnerOfMatch(86), away: getWinnerOfMatch(88) }
   ];
 }
 
 // Determine matchups for Quarterfinals
 export function getQuarterFinalMatches(r16Winners: string[]): { home: string; away: string; id: number }[] {
-  const getWinnerOfMatch = (matchId: number) => r16Winners[matchId - 1] || `Winner R16 Match ${matchId}`;
+  const getWinnerOfMatch = (matchId: number) => r16Winners[matchId - 89] || `Winner Match ${matchId}`;
   return [
-    { id: 1, home: getWinnerOfMatch(1), away: getWinnerOfMatch(2) },
-    { id: 2, home: getWinnerOfMatch(3), away: getWinnerOfMatch(4) },
-    { id: 3, home: getWinnerOfMatch(5), away: getWinnerOfMatch(6) },
-    { id: 4, home: getWinnerOfMatch(7), away: getWinnerOfMatch(8) }
+    { id: 97, home: getWinnerOfMatch(89), away: getWinnerOfMatch(90) },
+    { id: 98, home: getWinnerOfMatch(93), away: getWinnerOfMatch(94) },
+    { id: 99, home: getWinnerOfMatch(91), away: getWinnerOfMatch(92) },
+    { id: 100, home: getWinnerOfMatch(95), away: getWinnerOfMatch(96) }
   ];
 }
 
 // Determine matchups for Semifinals
 export function getSemiFinalMatches(r8Winners: string[]): { home: string; away: string; id: number }[] {
-  const getWinnerOfMatch = (matchId: number) => r8Winners[matchId - 1] || `Winner QF Match ${matchId}`;
+  const getWinnerOfMatch = (matchId: number) => r8Winners[matchId - 97] || `Winner Match ${matchId}`;
   return [
-    { id: 1, home: getWinnerOfMatch(1), away: getWinnerOfMatch(2) },
-    { id: 2, home: getWinnerOfMatch(3), away: getWinnerOfMatch(4) }
+    { id: 101, home: getWinnerOfMatch(97), away: getWinnerOfMatch(98) },
+    { id: 102, home: getWinnerOfMatch(99), away: getWinnerOfMatch(100) }
   ];
 }
 

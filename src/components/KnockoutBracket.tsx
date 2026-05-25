@@ -44,16 +44,16 @@ export default function KnockoutBracket({
   };
 
   const thirdPlaceMatch = {
-    id: 1,
+    id: 103,
     home: getSFLoser(0),
     away: getSFLoser(1)
   };
 
   // Derive Final Matchup (Winners of SF Matches)
   const finalMatch = {
-    id: 1,
-    home: predictions.r4Winners[0] || 'Winner SF 1',
-    away: predictions.r4Winners[1] || 'Winner SF 2'
+    id: 104,
+    home: predictions.r4Winners[0] || 'Winner Match 101',
+    away: predictions.r4Winners[1] || 'Winner Match 102'
   };
 
   const handleMatchSelect = (
