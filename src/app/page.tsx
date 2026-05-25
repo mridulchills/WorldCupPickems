@@ -105,6 +105,16 @@ export default function Home() {
     setMessage(null);
   };
 
+  // Auto-clear toast messages after 3 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   // Compute current user score breakdown if results are published
   const userScoreBreakdown = isActualResultsPublished 
     ? calculateScore(predictions, actualResults) 
