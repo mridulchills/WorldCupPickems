@@ -1,0 +1,44 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id // Clerk User ID
+  email     String   @unique
+  username  String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  prediction Prediction?
+  score      Score?
+}
+
+model Prediction {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data      String   // Stringified JSON containing all predictions
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActualResult {
+  id        String   @id @default("singleton") // Only one record
+  data      String   // Stringified JSON containing the actual results
+  updatedAt DateTime @updatedAt
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points    Int      @default(0)
+  breakdown String   // JSON breakdown of points per stage
+  updatedAt DateTime @updatedAt
+}
