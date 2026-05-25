@@ -177,7 +177,26 @@ export default function KnockoutBracket({
     );
   };
 
-  const renderMatchesInPairs = (matches: any[], roundKey: 'r32'|'r16'|'r8'|'r4', titlePrefix: string) => {
+  const r32Order = [74, 77, 73, 75, 83, 84, 81, 82, 76, 78, 79, 80, 86, 88, 85, 87];
+  const r16Order = [89, 90, 93, 94, 91, 92, 95, 96];
+  const r8Order = [97, 98, 99, 100];
+  const r4Order = [101, 102];
+
+  const sortMatches = (matches: any[], order: number[]) => {
+    return order.map(id => matches.find(m => m.id === id)).filter(Boolean);
+  };
+
+  const r32MatchesSorted = sortMatches(r32Matches, r32Order);
+  const r16MatchesSorted = sortMatches(r16Matches, r16Order);
+  const r8MatchesSorted = sortMatches(r8Matches, r8Order);
+  const r4MatchesSorted = sortMatches(r4Matches, r4Order);
+
+  const renderMatchesInPairs = (
+    matches: any[], 
+    roundKey: 'r32'|'r16'|'r8'|'r4', 
+    titlePrefix: string,
+    baseId: number
+  ) => {
     const pairs = [];
     const winners = predictions[`${roundKey}Winners` as keyof TournamentData] as string[] || [];
     
@@ -185,17 +204,20 @@ export default function KnockoutBracket({
       pairs.push(
         <div className="matchup-pair" key={`${roundKey}-pair-${i}`}>
           {[0, 1].map(offset => {
-            const idx = i + offset;
-            const match = matches[idx];
+            const visualIdx = i + offset;
+            const match = matches[visualIdx];
             if (!match) return null;
-            const selected = winners[idx];
+            
+            const logicalIdx = match.id - baseId;
+            const selected = winners[logicalIdx];
+            
             return (
-              <div key={`${roundKey}-${idx}`} className="matchup-card">
+              <div key={`${roundKey}-${match.id}`} className="matchup-card">
                 <div style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderBottom: '1px solid var(--border-muted)', opacity: 0.5 }}>
                   {titlePrefix} {match.id}
                 </div>
-                {renderMatchupTeam(match.home, roundKey, idx, selected === match.home, selected === match.away)}
-                {renderMatchupTeam(match.away, roundKey, idx, selected === match.away, selected === match.home)}
+                {renderMatchupTeam(match.home, roundKey, logicalIdx, selected === match.home, selected === match.away)}
+                {renderMatchupTeam(match.away, roundKey, logicalIdx, selected === match.away, selected === match.home)}
               </div>
             );
           })}
@@ -216,25 +238,25 @@ export default function KnockoutBracket({
           {/* Round of 32 */}
           <div className="bracket-round">
             <h3 className="bracket-round-header">Round of 32</h3>
-            {renderMatchesInPairs(r32Matches, 'r32', 'MATCH')}
+            {renderMatchesInPairs(r32MatchesSorted, 'r32', 'MATCH', 73)}
           </div>
 
           {/* Round of 16 */}
           <div className="bracket-round">
             <h3 className="bracket-round-header">Round of 16</h3>
-            {renderMatchesInPairs(r16Matches, 'r16', 'MATCH')}
+            {renderMatchesInPairs(r16MatchesSorted, 'r16', 'MATCH', 89)}
           </div>
 
           {/* Quarter-finals */}
           <div className="bracket-round">
             <h3 className="bracket-round-header">Quarter-finals</h3>
-            {renderMatchesInPairs(r8Matches, 'r8', 'QF')}
+            {renderMatchesInPairs(r8MatchesSorted, 'r8', 'QF', 97)}
           </div>
 
           {/* Semi-finals */}
           <div className="bracket-round">
             <h3 className="bracket-round-header">Semi-finals</h3>
-            {renderMatchesInPairs(r4Matches, 'r4', 'SF')}
+            {renderMatchesInPairs(r4MatchesSorted, 'r4', 'SF', 101)}
           </div>
 
           {/* Finals / 3rd Place */}
