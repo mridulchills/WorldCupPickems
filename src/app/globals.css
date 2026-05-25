@@ -313,13 +313,14 @@ h1, h2, h3, h4, h5, h6 {
   min-width: 1400px;
   padding: 1rem;
   justify-content: space-between;
+  align-items: stretch; /* Ensure all rounds are same height */
 }
 
 .bracket-round {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
   width: 220px;
+  position: relative;
 }
 
 .bracket-round-header {
@@ -332,14 +333,51 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1.5rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.matchup-pair {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+  position: relative;
+}
+
+/* Only draw connecting lines if it's not the last round (SF is last standard round before Final) */
+.bracket-round:not(.final-round) .matchup-pair::after {
+  content: '';
+  position: absolute;
+  right: -1.5rem;
+  top: 25%;
+  bottom: 25%;
+  border-right: 2px solid var(--border-color);
+  border-top: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
+  width: 1.5rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bracket-round:not(.final-round) .matchup-pair::before {
+  content: '';
+  position: absolute;
+  right: -3rem;
+  top: 50%;
+  width: 1.5rem;
+  border-top: 2px solid var(--border-color);
+  z-index: 1;
+  pointer-events: none;
 }
 
 .matchup-card {
   border: 1px solid var(--border-color);
   background-color: var(--background-color);
-  margin: 1rem 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 2;
+  margin: 0.5rem 0; /* Add slight visual spacing within the space-around layout */
 }
 
 .matchup-team {

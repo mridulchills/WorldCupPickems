@@ -177,6 +177,34 @@ export default function KnockoutBracket({
     );
   };
 
+  const renderMatchesInPairs = (matches: any[], roundKey: 'r32'|'r16'|'r8'|'r4', titlePrefix: string) => {
+    const pairs = [];
+    const winners = predictions[`${roundKey}Winners` as keyof TournamentData] as string[] || [];
+    
+    for (let i = 0; i < matches.length; i += 2) {
+      pairs.push(
+        <div className="matchup-pair" key={`${roundKey}-pair-${i}`}>
+          {[0, 1].map(offset => {
+            const idx = i + offset;
+            const match = matches[idx];
+            if (!match) return null;
+            const selected = winners[idx];
+            return (
+              <div key={`${roundKey}-${idx}`} className="matchup-card">
+                <div style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderBottom: '1px solid var(--border-muted)', opacity: 0.5 }}>
+                  {titlePrefix} {match.id}
+                </div>
+                {renderMatchupTeam(match.home, roundKey, idx, selected === match.home, selected === match.away)}
+                {renderMatchupTeam(match.away, roundKey, idx, selected === match.away, selected === match.home)}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    return pairs;
+  };
+
   return (
     <div>
       <div className="editor-note">
@@ -188,73 +216,29 @@ export default function KnockoutBracket({
           {/* Round of 32 */}
           <div className="bracket-round">
             <h3 className="bracket-round-header">Round of 32</h3>
-            {r32Matches.map((match, idx) => {
-              const selected = predictions.r32Winners?.[idx];
-              return (
-                <div key={`r32-${idx}`} className="matchup-card">
-                  <div style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderBottom: '1px solid var(--border-muted)', opacity: 0.5 }}>
-                    MATCH {match.id}
-                  </div>
-                  {renderMatchupTeam(match.home, 'r32', idx, selected === match.home, selected === match.away)}
-                  {renderMatchupTeam(match.away, 'r32', idx, selected === match.away, selected === match.home)}
-                </div>
-              );
-            })}
+            {renderMatchesInPairs(r32Matches, 'r32', 'MATCH')}
           </div>
 
           {/* Round of 16 */}
           <div className="bracket-round">
             <h3 className="bracket-round-header">Round of 16</h3>
-            {r16Matches.map((match, idx) => {
-              const selected = predictions.r16Winners?.[idx];
-              return (
-                <div key={`r16-${idx}`} className="matchup-card">
-                  <div style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderBottom: '1px solid var(--border-muted)', opacity: 0.5 }}>
-                    MATCH {match.id}
-                  </div>
-                  {renderMatchupTeam(match.home, 'r16', idx, selected === match.home, selected === match.away)}
-                  {renderMatchupTeam(match.away, 'r16', idx, selected === match.away, selected === match.home)}
-                </div>
-              );
-            })}
+            {renderMatchesInPairs(r16Matches, 'r16', 'MATCH')}
           </div>
 
           {/* Quarter-finals */}
           <div className="bracket-round">
             <h3 className="bracket-round-header">Quarter-finals</h3>
-            {r8Matches.map((match, idx) => {
-              const selected = predictions.r8Winners?.[idx];
-              return (
-                <div key={`r8-${idx}`} className="matchup-card">
-                  <div style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderBottom: '1px solid var(--border-muted)', opacity: 0.5 }}>
-                    QF {match.id}
-                  </div>
-                  {renderMatchupTeam(match.home, 'r8', idx, selected === match.home, selected === match.away)}
-                  {renderMatchupTeam(match.away, 'r8', idx, selected === match.away, selected === match.home)}
-                </div>
-              );
-            })}
+            {renderMatchesInPairs(r8Matches, 'r8', 'QF')}
           </div>
 
           {/* Semi-finals */}
           <div className="bracket-round">
             <h3 className="bracket-round-header">Semi-finals</h3>
-            {r4Matches.map((match, idx) => {
-              const selected = predictions.r4Winners?.[idx];
-              return (
-                <div key={`r4-${idx}`} className="matchup-card">
-                  <div style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderBottom: '1px solid var(--border-muted)', opacity: 0.5 }}>
-                    SF {match.id}
-                  </div>
-                  {renderMatchupTeam(match.home, 'r4', idx, selected === match.home, selected === match.away)}
-                  {renderMatchupTeam(match.away, 'r4', idx, selected === match.away, selected === match.home)}
-                </div>
-              );
-            })}
+            {renderMatchesInPairs(r4Matches, 'r4', 'SF')}
           </div>
 
           {/* Finals / 3rd Place */}
-          <div className="bracket-round" style={{ justifyContent: 'center', gap: '3rem' }}>
+          <div className="bracket-round final-round" style={{ justifyContent: 'center', gap: '3rem' }}>
             <div>
               <h3 className="bracket-round-header">Third Place</h3>
               <div className="matchup-card">
