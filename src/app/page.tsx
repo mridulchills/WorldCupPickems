@@ -315,7 +315,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="footer container">
-        <div>THE 2026 PLAYBOOK — INDEPENDENT JOURNALISM AND WORLD CUP COMPANION</div>
+        <div>Prove your ball knowledge, have fun</div>
         <div style={{ marginTop: '0.5rem', opacity: 0.5, fontSize: '0.7rem' }}>
           Not affiliated with FIFA or any national soccer federation. All rights reserved.
         </div>
