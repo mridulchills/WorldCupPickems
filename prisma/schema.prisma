@@ -42,3 +42,10 @@ model Score {
   breakdown String   // JSON breakdown of points per stage
   updatedAt DateTime @updatedAt
 }
+
+model SystemConfig {
+  id          String   @id @default("singleton")
+  picksLocked Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+}
+

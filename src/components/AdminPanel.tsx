@@ -5,18 +5,44 @@ import { TournamentData } from '@/lib/scoring';
 import GroupsPredictor from './GroupsPredictor';
 import ThirdPlaceSelector from './ThirdPlaceSelector';
 import KnockoutBracket from './KnockoutBracket';
-import { saveActual } from '@/lib/api';
+import { saveActual, saveConfig } from '@/lib/api';
 
 interface AdminPanelProps {
   actualData: TournamentData;
   onChange: (updated: TournamentData) => void;
   onScoringComplete: () => void;
+  picksLocked: boolean;
+  onLockToggle: (locked: boolean) => void;
 }
 
-export default function AdminPanel({ actualData, onChange, onScoringComplete }: AdminPanelProps) {
+export default function AdminPanel({ 
+  actualData, 
+  onChange, 
+  onScoringComplete, 
+  picksLocked, 
+  onLockToggle 
+}: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'groups' | 'thirds' | 'bracket'>('groups');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLocking, setIsLocking] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+
+  const handleToggleLock = async () => {
+    setIsLocking(true);
+    setLogs(prev => [...prev, `${picksLocked ? 'Unlocking' : 'Locking'} user predictions...`]);
+    try {
+      await saveConfig(!picksLocked);
+      onLockToggle(!picksLocked);
+      setLogs(prev => [
+        ...prev,
+        `Predictions successfully ${!picksLocked ? 'LOCKED' : 'UNLOCKED'}.`
+      ]);
+    } catch (e: any) {
+      setLogs(prev => [...prev, `ERROR: ${e.message || 'Failed to toggle lock status'}`]);
+    } finally {
+      setIsLocking(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -39,6 +65,42 @@ export default function AdminPanel({ actualData, onChange, onScoringComplete }: 
 
   return (
     <div style={{ border: '2px solid var(--border-color)', padding: '2rem', marginBottom: '3rem' }}>
+      {/* Dynamic Lock Settings */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        backgroundColor: 'var(--bg-muted)', 
+        border: '1px solid var(--border-color)', 
+        padding: '1.25rem', 
+        marginBottom: '2rem'
+      }}>
+        <div>
+          <h4 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.9rem' }}>
+            Prediction Lock Status
+          </h4>
+          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.8rem', opacity: 0.7 }}>
+            {picksLocked 
+              ? 'Predictions are currently LOCKED. Regular users cannot save or change their brackets.' 
+              : 'Predictions are currently OPEN. Users can freely modify and save their brackets.'}
+          </p>
+        </div>
+        <button
+          onClick={handleToggleLock}
+          disabled={isLocking}
+          className="btn"
+          style={{
+            padding: '0.5rem 1.5rem',
+            fontSize: '0.8rem',
+            backgroundColor: picksLocked ? '#2e7d32' : '#c62828',
+            color: '#fff',
+            borderColor: picksLocked ? '#2e7d32' : '#c62828'
+          }}
+        >
+          {isLocking ? 'UPDATING...' : picksLocked ? 'UNLOCK PREDICTIONS' : 'LOCK PREDICTIONS'}
+        </button>
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
         <div>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>

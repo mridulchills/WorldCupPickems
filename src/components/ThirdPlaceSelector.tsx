@@ -7,9 +7,10 @@ interface ThirdPlaceSelectorProps {
   groupStandings: Record<string, string[]>;
   selectedThirds: string[];
   onChange: (selected: string[]) => void;
+  isReadOnly?: boolean;
 }
 
-export default function ThirdPlaceSelector({ groupStandings, selectedThirds, onChange }: ThirdPlaceSelectorProps) {
+export default function ThirdPlaceSelector({ groupStandings, selectedThirds, onChange, isReadOnly = false }: ThirdPlaceSelectorProps) {
   // Extract 3rd place teams from all 12 groups
   const thirdPlaceTeams = Object.keys(groupStandings).map(group => {
     const teamsInGroup = groupStandings[group] || [];
@@ -21,6 +22,7 @@ export default function ThirdPlaceSelector({ groupStandings, selectedThirds, onC
   }).filter(item => item.team !== undefined) as { group: string; team: typeof TEAMS[0] }[];
 
   const handleToggle = (teamId: string) => {
+    if (isReadOnly) return;
     const isSelected = selectedThirds.includes(teamId);
     if (isSelected) {
       onChange(selectedThirds.filter(id => id !== teamId));
@@ -43,16 +45,17 @@ export default function ThirdPlaceSelector({ groupStandings, selectedThirds, onC
         <strong> Current Selection: {selectedThirds.length} / 8</strong>
       </p>
 
-      <div className="third-place-list">
+      <div className="third-place-list" style={isReadOnly ? { opacity: 0.85 } : undefined}>
         {thirdPlaceTeams.map(({ group, team }) => {
           const isSelected = selectedThirds.includes(team.id);
-          const isDisabled = !isSelected && selectedThirds.length >= 8;
+          const isDisabled = (!isSelected && selectedThirds.length >= 8) || isReadOnly;
 
           return (
             <div 
               key={team.id}
               onClick={() => !isDisabled && handleToggle(team.id)}
               className={`third-place-item ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+              style={isReadOnly ? { cursor: 'not-allowed' } : undefined}
             >
               <div className="team-info">
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid currentColor', padding: '0.1rem 0.3rem' }}>
@@ -66,7 +69,7 @@ export default function ThirdPlaceSelector({ groupStandings, selectedThirds, onC
                 <span className="team-name">{team.name}</span>
               </div>
               <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>
-                {isSelected ? 'SELECTED' : 'SELECT'}
+                {isSelected ? 'SELECTED' : isReadOnly ? '—' : 'SELECT'}
               </div>
             </div>
           );

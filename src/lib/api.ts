@@ -39,3 +39,20 @@ export async function fetchLeaderboard(): Promise<any[]> {
   const data = await res.json();
   return data.leaderboard;
 }
+
+export async function fetchConfig(): Promise<{ picksLocked: boolean }> {
+  const res = await fetch('/api/config');
+  if (!res.ok) throw new Error('Failed to fetch configuration');
+  return res.json();
+}
+
+export async function saveConfig(picksLocked: boolean): Promise<any> {
+  const res = await fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ picksLocked }),
+  });
+  if (!res.ok) throw new Error('Failed to save configuration');
+  return res.json();
+}
+

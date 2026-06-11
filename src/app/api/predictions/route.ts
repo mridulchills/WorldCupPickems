@@ -34,6 +34,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Check if predictions are locked
+    const config = await prisma.systemConfig.findUnique({
+      where: { id: 'singleton' },
+    });
+    const isLocked = (process.env.LOCK_PREDICTIONS === 'true') || (config?.picksLocked ?? false);
+    if (isLocked) {
+      return NextResponse.json({ error: 'Predictions are locked and cannot be modified.' }, { status: 403 });
+    }
+
     const stringifiedData = typeof data === 'string' ? data : JSON.stringify(data);
 
     const prediction = await prisma.prediction.upsert({

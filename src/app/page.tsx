@@ -17,7 +17,8 @@ import {
   fetchPredictions, 
   savePredictions, 
   fetchActual, 
-  fetchLeaderboard 
+  fetchLeaderboard,
+  fetchConfig
 } from '@/lib/api';
 
 export default function Home() {
@@ -30,6 +31,7 @@ export default function Home() {
   
   const [actualResults, setActualResults] = useState<TournamentData>(getDefaultTournamentData());
   const [isActualResultsPublished, setIsActualResultsPublished] = useState(false);
+  const [picksLocked, setPicksLocked] = useState(false);
   
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -66,6 +68,10 @@ export default function Home() {
           setDbPredictions(null);
         }
       }
+
+      // 4. Fetch system config
+      const configObj = await fetchConfig();
+      setPicksLocked(configObj.picksLocked);
     } catch (e) {
       console.error('Error loading page data:', e);
     } finally {
@@ -157,6 +163,31 @@ export default function Home() {
               </div>
             )}
 
+            {/* Picks Locked Alert Banner */}
+            {picksLocked && (
+              <div style={{
+                backgroundColor: 'rgba(198, 40, 40, 0.08)',
+                borderLeft: '4px solid #c62828',
+                padding: '1rem 1.5rem',
+                marginBottom: '1.5rem',
+                color: '#c62828',
+                fontFamily: 'var(--font-serif)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>🔒</span>
+                <div>
+                  <strong style={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.85rem', display: 'block' }}>
+                    Brackets Locked
+                  </strong>
+                  <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                    Predictions are locked for the tournament. You can view your selections, but editing is disabled.
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Navigation Tabs */}
             <div className="nav-tabs">
               <button 
@@ -200,6 +231,7 @@ export default function Home() {
                 <GroupsPredictor 
                   standings={predictions.groupStandings} 
                   onChange={(newStandings) => setPredictions({ ...predictions, groupStandings: newStandings })}
+                  isReadOnly={picksLocked}
                 />
               )}
               
@@ -208,6 +240,7 @@ export default function Home() {
                   groupStandings={predictions.groupStandings}
                   selectedThirds={predictions.bestThirdPlace}
                   onChange={(newThirds) => setPredictions({ ...predictions, bestThirdPlace: newThirds })}
+                  isReadOnly={picksLocked}
                 />
               )}
               
@@ -217,6 +250,7 @@ export default function Home() {
                   bestThirdPlace={predictions.bestThirdPlace}
                   predictions={predictions}
                   onChange={(updatedPred) => setPredictions(updatedPred)}
+                  isReadOnly={picksLocked}
                 />
               )}
               
@@ -232,6 +266,8 @@ export default function Home() {
                   actualData={actualResults} 
                   onChange={(updatedActual) => setActualResults(updatedActual)}
                   onScoringComplete={loadData}
+                  picksLocked={picksLocked}
+                  onLockToggle={(locked) => setPicksLocked(locked)}
                 />
               )}
             </div>
@@ -240,7 +276,7 @@ export default function Home() {
       </main>
 
       {/* Floating Save Actions Bar */}
-      {isSignedIn && hasUnsavedChanges && !authLoading && !isDataLoading && (
+      {isSignedIn && hasUnsavedChanges && !picksLocked && !authLoading && !isDataLoading && (
         <div style={{
           position: 'fixed',
           bottom: 0,

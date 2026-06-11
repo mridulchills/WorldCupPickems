@@ -6,12 +6,13 @@ import { TEAMS, GROUPS, Team } from '@/lib/teams';
 interface GroupsPredictorProps {
   standings: Record<string, string[]>; // Group ID -> array of 4 team IDs
   onChange: (newStandings: Record<string, string[]>) => void;
+  isReadOnly?: boolean;
 }
 
-export default function GroupsPredictor({ standings, onChange }: GroupsPredictorProps) {
+export default function GroupsPredictor({ standings, onChange, isReadOnly = false }: GroupsPredictorProps) {
   // Move a team up within its group
   const moveUp = (group: string, index: number) => {
-    if (index === 0) return;
+    if (isReadOnly || index === 0) return;
     const current = [...(standings[group] || [])];
     const temp = current[index];
     current[index] = current[index - 1];
@@ -25,7 +26,7 @@ export default function GroupsPredictor({ standings, onChange }: GroupsPredictor
 
   // Move a team down within its group
   const moveDown = (group: string, index: number) => {
-    if (index === 3) return;
+    if (isReadOnly || index === 3) return;
     const current = [...(standings[group] || [])];
     const temp = current[index];
     current[index] = current[index + 1];
@@ -39,8 +40,10 @@ export default function GroupsPredictor({ standings, onChange }: GroupsPredictor
 
   return (
     <div>
-      <div className="editor-note">
-        Note: Use the arrow controls to sort the final group standings. The top two teams (marked Q) will automatically qualify. The third-placed team will advance to the third-place selection pool.
+      <div className="editor-note" style={{ fontStyle: isReadOnly ? 'italic' : 'normal', opacity: isReadOnly ? 0.7 : 1 }}>
+        {isReadOnly 
+          ? "Viewing locked group standings. Edit controls are disabled." 
+          : "Note: Use the arrow controls to sort the final group standings. The top two teams (marked Q) will automatically qualify. The third-placed team will advance to the third-place selection pool."}
       </div>
       <div className="groups-grid">
         {GROUPS.map(group => {
@@ -87,16 +90,18 @@ export default function GroupsPredictor({ standings, onChange }: GroupsPredictor
                         <button 
                           onClick={() => moveUp(group, index)}
                           className="btn-arrow"
-                          disabled={index === 0}
+                          disabled={index === 0 || isReadOnly}
                           title="Move up"
+                          style={isReadOnly ? { cursor: 'not-allowed', opacity: 0.3 } : undefined}
                         >
                           ▲
                         </button>
                         <button 
                           onClick={() => moveDown(group, index)}
                           className="btn-arrow"
-                          disabled={index === 3}
+                          disabled={index === 3 || isReadOnly}
                           title="Move down"
+                          style={isReadOnly ? { cursor: 'not-allowed', opacity: 0.3 } : undefined}
                         >
                           ▼
                         </button>
